@@ -1,32 +1,34 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const bcrypt = require("bcrypt");
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
+const validator = require("email-validator");
 
-const User = require('../models/User');
-
+// User signup controller
 exports.signup = (req, res, next) => {
-  const passwordValidator = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])[A-Za-z0-9]{6,}$/;
-    
-  if (passwordValidator.test(req.body.password)){
-    
-    bcrypt.hash(req.body.password, 10)
-    .then(hash => {
-    const user = new User({
-        email: req.body.email,
-        password: hash
+  const isValidateEmail = validator.validate(req.body.email);
+  if (!isValidateEmail) {
+    res.writeHead(400, 'Email incorrect !"}', {
+      "content-type": "application/json",
     });
-    
-    user.save()
-        .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
-        .catch(() => res.status(400).json({ message: "L'adresse mail renseignée est déjà utilisée." }));
-    })
-    .catch(error => res.status(500).json({ error }));
-  } 
-  else {
-    res.status(400).json({message: "Le mot de passe doit faire une taille de 8 caractères et doit obligatoirement contenir : 1 majuscule + 1 minuscule + 1 chiffre + 1 symbole"});
-  }  
+    res.end("Le format de l'email est incorrect.");
+  } else {
+    bcrypt
+      .hash(req.body.password, 10)
+      .then((hash) => {
+        const user = new User({
+          email: req.body.email,
+          password: hash,
+        });
+        user
+          .save()
+          .then(() => res.status(201).json({ message: "Utilisateur créé !" }))
+          .catch((error) => res.status(400).json({ error }));
+      })
+      .catch((error) => res.status(500).json({ error }));
+  }
 };
 
+// user login controller
 exports.login = (req, res, next) => {
 
   console.log('req', req.body);
@@ -51,14 +53,10 @@ exports.login = (req, res, next) => {
             )
           });
         })
-        .catch(error => {
-          console.log('error', error);
-          res.status(500).json({ error }) 
+        .catch(error => { res.status(500).json({ error }) 
         });
     })
-    .catch(error => {
-      console.log('error', error);
-      res.status(500).json({ error }) 
+    .catch(error => { res.status(500).json({ error }) 
     }
       );
 };
