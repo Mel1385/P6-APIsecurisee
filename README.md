@@ -1,5 +1,4 @@
-# P6-Bechina-melissa
-
+# P6-Construisez une API sécurisée pour une application d'avis gastronomiques
 Prérequis : 
 - Environnement Node.js
 - Angular CLI
